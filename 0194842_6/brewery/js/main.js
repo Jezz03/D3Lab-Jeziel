@@ -1,7 +1,7 @@
 /*
 *    main.js
 */
-//Project 1
+//Exersize 6
 d3.json("data/revenues.json").then((data) => {data.forEach((d, i)=>{
         d.revenue = +d.revenue;
       });
@@ -29,7 +29,6 @@ d3.json("data/revenues.json").then((data) => {data.forEach((d, i)=>{
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
-    var rects = g.selectAll("rect").data(data);
     var bottomAxis = d3.axisBottom(x);
     var leftAxis = d3.axisLeft(y).ticks(11).tickFormat(d3.format("$.0s"));
     g.append("g")
@@ -61,13 +60,14 @@ d3.json("data/revenues.json").then((data) => {data.forEach((d, i)=>{
     .attr("text-anchor", "middle")
     .attr("transform", "rotate(-90)")
     .text("Revenue (dlls.)");
-
-    rects.enter()
+    var bars = g.selectAll("rect").data(data)
+      .enter()
       .append("rect")
       .attr("x", (d) => {return x(d.month);})
       .attr("y", (d)=>{return y(d.revenue);})
       .attr("width", x.bandwidth())
       .attr("height", (d)=>{return height - y(d.revenue);})
       .attr("fill","yellow");
-
+      d3.interval( ( )=>{console.log("Hello World")}, 1000);
+  }).catch((error)=>{console.log(error);
   });
