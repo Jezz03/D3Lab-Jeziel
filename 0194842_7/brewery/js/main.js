@@ -1,12 +1,13 @@
 /*
 *    main.js
 */
-//EXERCISE 6
+//EXERCISE 7
 
 var margin = {left:100, right: 10, top: 10, bottom: 100};
 var width = 600 - margin.left - margin.right;
 var height = 400 - margin.top - margin.bottom;
 var flag = true;
+var t = d3.transition().duration(750);
 var g = d3.select("#chart-area").append("svg")
 .attr("width", width + margin.right + margin.left)
 .attr("height", height + margin.top + margin.bottom)
@@ -40,9 +41,12 @@ d3.json("data/revenues.json").then((data) => {data.forEach((d, i)=>{
         d.revenue = +d.revenue;
         d.profit = +d.profit;
       });
-      d3.interval( ( )=>{update(data)}, 1000);
-      update(data);
+      d3.interval( ( )=>{
+      var newData = flag ? data : data.slice(1);
+      console.log(newData);
+      update(newData);
       flag = !flag;
+    }, 1000);
   }).catch((error)=>{console.log(error);
   });
 function update(data){
@@ -53,22 +57,31 @@ function update(data){
   y.domain([0, d3.max(data, (d) => { return d[value]; })]);
   var bottomAxis = d3.axisBottom(x);
   var leftAxis = d3.axisLeft(y).ticks(11).tickFormat(d3.format("$.2s"));
-  xAxisGroup.call(bottomAxis);
-  yAxisGroup.call(leftAxis);
+  xAxisGroup.transition(t).call(bottomAxis);
+  yAxisGroup.transition(t).call(leftAxis);
   var months = data.map((d) => {return d.month;});
   var revenues = data.map((d) => {return d.revenue;});
   var max = Math.max.apply(null, revenues);
 
-  var bars = g.selectAll("rect").data(data);
-  bars.exit().remove();
-  bars.attr("x", (d) => {return x(d.month);})
+  var bars = g.selectAll("rect").data(data, (d) => { return d.month; });
+  bars.exit().attr("fill", "yellow")
+    .transition(t)
+    .attr("y", y(0))
+    .attr("height", 0)
+    .remove();
+  bars.transition(t)
+    .attr("x", (d) => {return x(d.month);})
     .attr("y", (d)=>{return y(d[value]);})
     .attr("width", x.bandwidth())
     .attr("height", (d)=>{return height - y(d[value]);});
   bars.enter().append("rect")
+    .attr("fill", "yellow")
     .attr("x", (d) => {return x(d.month);})
-    .attr("y", (d)=>{return y(d[value]);})
+    .attr("y", y(0))
     .attr("width", x.bandwidth())
-    .attr("height", (d)=>{return height - y(d.revenue);})
-    .attr("fill", "yellow");
+    .attr("height", 0)
+    .merge(bars)
+    .transition(t)
+    .attr("y", (d)=>{return y(d[value]);})
+    .attr("height", (d)=>{return height - y(d[value]);});
 }
